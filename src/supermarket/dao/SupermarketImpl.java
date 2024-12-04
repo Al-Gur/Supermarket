@@ -6,9 +6,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.function.Predicate;
 
 public class SupermarketImpl implements Supermarket {
-    private ArrayList<Product> products;
+    private Collection<Product> products;
 
     public SupermarketImpl() {
         products = new ArrayList<>();
@@ -43,37 +44,30 @@ public class SupermarketImpl implements Supermarket {
         return null;
     }
 
-    @Override
-    public Iterable<Product> findByCategory(String category) {
+    private Iterable<Product> findByPredicate(Predicate<Product> p) {
         ArrayList<Product> res = new ArrayList<>();
         for (Product product : products) {
-            if (product.getCategory().equals(category)) {
+            if (p.test(product)) {
                 res.add(product);
             }
         }
         return res;
+    }
+
+    @Override
+    public Iterable<Product> findByCategory(String category) {
+        return findByPredicate(product -> product.getCategory().equals(category));
     }
 
     @Override
     public Iterable<Product> findByBrand(String brand) {
-        ArrayList<Product> res = new ArrayList<>();
-        for (Product product : products) {
-            if (product.getBrand().equals(brand)) {
-                res.add(product);
-            }
-        }
-        return res;
+        return findByPredicate(product -> product.getBrand().equals(brand));
     }
 
     @Override
     public Iterable<Product> findProductsWithExpiredDate() {
-        ArrayList<Product> res = new ArrayList<>();
-        for (Product product : products) {
-            if (product.getExpDate().isBefore(LocalDate.now())) {
-                res.add(product);
-            }
-        }
-        return res;
+        LocalDate date = LocalDate.now();
+        return findByPredicate(product -> product.getExpDate().isBefore(date));
     }
 
     @Override
